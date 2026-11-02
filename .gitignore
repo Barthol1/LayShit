@@ -1,0 +1,13 @@
+# build trees
+build/
+build-*/
+out/
+.vs/
+*.user
+
+# JUCE 8.0.4 is fetched by CI (see .github/workflows/release.yml); locally it lives in libs/JUCE
+libs/JUCE/
+
+# snapshots / scratch
+*.png
+!docs/**/*.png

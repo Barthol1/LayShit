@@ -1,0 +1,54 @@
+name: Build & Release
+
+on:
+  push:
+    tags: ["v*"]          # git tag v1.0.0 && git push --tags  -> GitHub Release with zip
+  workflow_dispatch:      # manual run -> zip available as a workflow artifact
+
+permissions:
+  contents: write
+
+env:
+  JUCE_VERSION: 8.0.4
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch JUCE ${{ env.JUCE_VERSION }}
+        shell: bash
+        run: git clone --depth 1 --branch "$JUCE_VERSION" https://github.com/juce-framework/JUCE.git libs/JUCE
+
+      - name: Configure
+        run: cmake -B build -A x64
+
+      - name: Build plugin + tests
+        run: cmake --build build --config Release --parallel --target LayShit_VST3 LayShit_Standalone LayShitTests
+
+      - name: Run DSP tests
+        run: build/LayShitTests_artefacts/Release/LayShitTests.exe
+
+      - name: Package
+        id: pkg
+        shell: pwsh
+        run: |
+          $ver = if ("${{ github.ref_type }}" -eq "tag") { "${{ github.ref_name }}" } else { "dev-$("${{ github.sha }}".Substring(0,7))" }
+          $art = "build/LayShit_artefacts/Release"
+          New-Item -ItemType Directory dist | Out-Null
+          Compress-Archive -Path "$art/VST3/LayShit.vst3" -DestinationPath "dist/LayShit-$ver-Windows-VST3.zip"
+          Compress-Archive -Path "$art/Standalone/LayShit.exe" -DestinationPath "dist/LayShit-$ver-Windows-Standalone.zip"
+          Get-ChildItem dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LayShit-Windows
+          path: dist/*.zip
+
+      - name: Publish GitHub Release
+        if: github.ref_type == 'tag'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.zip
+          generate_release_notes: true
