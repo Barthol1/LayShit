@@ -1,5 +1,7 @@
 # LayShit — the delay you lay
 
+<img width="1100" height="824" alt="image" src="https://github.com/user-attachments/assets/2c688281-367f-4567-b6c2-bc329bcf3c98" />
+
 A VST3 delay plugin. The GUI is a real-time 3D top-down view into a toilet bowl: turn the knobs and the poop shifts, spins, melts, crystallises, and when Crystals and Shimmer are both up it ascends and god-rays shoot out of the bowl.
 
 ## Build
